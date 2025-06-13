@@ -36,3 +36,8 @@ VALUES ('clients:create', 'Allows the creation of new client applications');
 UPDATE `oauth_clients`
 SET `scope` = 'profile users:create clients:create'
 WHERE `client_id` = 'testclient';
+
+INSERT INTO `oauth_scopes` (`scope`, `description`) VALUES
+('users:read', 'Allows reading user information'),
+('users:update', 'Allows updating user information'),
+('users:delete', 'Allows deleting users');

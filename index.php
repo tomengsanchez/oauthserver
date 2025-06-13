@@ -1,10 +1,7 @@
 <?php
-
-// Set the error reporting for development
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// 1. Include dependencies and configuration
 require_once __DIR__ . '/vendor/autoload.php';
 require_once 'config.php';
 require_once 'database.php';
@@ -29,17 +26,18 @@ $dbConnection = $database->connect();
 $request = ServerRequestFactory::fromGlobals($_SERVER, $_GET, $_POST, $_COOKIE, $_FILES);
 $path = $request->getUri()->getPath();
 $basePath = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
-$route = str_replace($basePath, '', $path);
+$route = trim(str_replace($basePath, '', $path), '/');
 $response = new Response();
 
 try {
+    // This regex matching allows for dynamic routes like /api/users/{username}
     switch (true) {
-        case ($route === '/token'):
+        case ($route === 'token'):
             $controller = new TokenController($dbConnection);
             $response = $controller->issueToken($request);
             break;
 
-        case ($route === '/api/profile'):
+        case ($route === 'api/profile' && $request->getMethod() === 'GET'):
             $request = validate_token($request);
             $userId = $request->getAttribute('oauth_user_id');
             $scopes = $request->getAttribute('oauth_scopes');
@@ -51,7 +49,7 @@ try {
             $response->getBody()->write(json_encode(['user_id' => $user->getIdentifier(), 'username' => $user->getUsername(), 'scopes' => $scopes, 'message' => 'Successfully accessed protected profile data.']));
             break;
         
-        case ($route === '/api/users' && $request->getMethod() === 'POST'):
+        case ($route === 'api/users' && $request->getMethod() === 'POST'):
             $request = validate_token($request);
             $scopes = $request->getAttribute('oauth_scopes');
             if (!in_array('users:create', $scopes)) {
@@ -59,59 +57,79 @@ try {
             }
             $body = json_decode((string) $request->getBody(), true);
             if (json_last_error() !== JSON_ERROR_NONE || !isset($body['username'], $body['password'], $body['email'])) {
-                $response->getBody()->write(json_encode(['error' => 'Bad Request', 'message' => 'Invalid JSON or missing required fields: username, password, email.']));
-                $response = $response->withStatus(400);
+                $response = $response->withStatus(400)->withBody((new \Laminas\Diactoros\StreamFactory())->createStream(json_encode(['error' => 'Bad Request', 'message' => 'Invalid JSON or missing required fields.'])));
                 break;
             }
             $userRepo = new \Ecosys\OAuth\Model\Repository\UserRepository($dbConnection);
-            $userData = [
-                'username' => $body['username'],
-                'password' => $body['password'],
-                'first_name' => $body['first_name'] ?? null,
-                'last_name' => $body['last_name'] ?? null,
-                'email' => $body['email']
-            ];
-            $result = $userRepo->createUser($userData);
+            $result = $userRepo->createUser($body);
             if (is_array($result)) {
-                $response->getBody()->write(json_encode(['status' => 'success', 'message' => 'User created successfully.', 'user' => $result]));
-                $response = $response->withStatus(201);
-            } elseif ($result === 'username_exists' || $result === 'email_exists') {
-                $response->getBody()->write(json_encode(['error' => 'Conflict', 'message' => 'A user with that username or email already exists.']));
-                $response = $response->withStatus(409);
+                $response = $response->withStatus(201)->withBody((new \Laminas\Diactoros\StreamFactory())->createStream(json_encode(['status' => 'success', 'user' => $result])));
             } else {
-                $response->getBody()->write(json_encode(['error' => 'Internal Server Error', 'message' => 'Could not create user due to a database error.']));
+                $response = $response->withStatus(409)->withBody((new \Laminas\Diactoros\StreamFactory())->createStream(json_encode(['error' => 'Conflict', 'message' => 'Username or email already exists.'])));
+            }
+            break;
+        
+        case ($route === 'api/users' && $request->getMethod() === 'GET'):
+            $request = validate_token($request);
+            $scopes = $request->getAttribute('oauth_scopes');
+            if (!in_array('users:read', $scopes)) {
+                throw new \League\OAuth2\Server\Exception\OAuthServerException('The token is missing the required "users:read" scope.', 6, 'insufficient_scope', 403);
+            }
+            $userRepo = new \Ecosys\OAuth\Model\Repository\UserRepository($dbConnection);
+            $users = $userRepo->getAllUsers();
+            $response->getBody()->write(json_encode(['status' => 'success', 'users' => $users]));
+            break;
+
+        case (preg_match('/^api\/users\/([a-zA-Z0-9_.-]+)$/', $route, $matches) && $request->getMethod() === 'GET'):
+            $request = validate_token($request);
+            $scopes = $request->getAttribute('oauth_scopes');
+            if (!in_array('users:read', $scopes)) {
+                throw new \League\OAuth2\Server\Exception\OAuthServerException('The token is missing the required "users:read" scope.', 6, 'insufficient_scope', 403);
+            }
+            $username = $matches[1];
+            $userRepo = new \Ecosys\OAuth\Model\Repository\UserRepository($dbConnection);
+            $user = $userRepo->getUserEntityByIdentifier($username);
+            if ($user) {
+                // FIX: Wrapped the user object in a 'user' key to make the response consistent.
+                $response->getBody()->write(json_encode(['status' => 'success', 'user' => $user]));
+            } else {
+                $response = $response->withStatus(404);
+            }
+            break;
+
+        case (preg_match('/^api\/users\/([a-zA-Z0-9_.-]+)$/', $route, $matches) && $request->getMethod() === 'PATCH'):
+            $request = validate_token($request);
+            $scopes = $request->getAttribute('oauth_scopes');
+            if (!in_array('users:update', $scopes)) {
+                throw new \League\OAuth2\Server\Exception\OAuthServerException('The token is missing the required "users:update" scope.', 6, 'insufficient_scope', 403);
+            }
+            $username = $matches[1];
+            $body = json_decode((string) $request->getBody(), true);
+            $userRepo = new \Ecosys\OAuth\Model\Repository\UserRepository($dbConnection);
+            $result = $userRepo->updateUser($username, $body);
+            if (is_object($result)) {
+                $response->getBody()->write(json_encode(['status' => 'success', 'user' => $result]));
+            } else {
+                $response = $response->withStatus(400); // Or 500 for database_error
+            }
+            break;
+
+        case (preg_match('/^api\/users\/([a-zA-Z0-9_.-]+)$/', $route, $matches) && $request->getMethod() === 'DELETE'):
+            $request = validate_token($request);
+            $scopes = $request->getAttribute('oauth_scopes');
+            if (!in_array('users:delete', $scopes)) {
+                throw new \League\OAuth2\Server\Exception\OAuthServerException('The token is missing the required "users:delete" scope.', 6, 'insufficient_scope', 403);
+            }
+            $username = $matches[1];
+            $userRepo = new \Ecosys\OAuth\Model\Repository\UserRepository($dbConnection);
+            if ($userRepo->deleteUser($username)) {
+                $response = $response->withStatus(204);
+            } else {
                 $response = $response->withStatus(500);
             }
             break;
 
-        case ($route === '/api/clients' && $request->getMethod() === 'POST'):
-            $request = validate_token($request);
-            $scopes = $request->getAttribute('oauth_scopes');
-            if (!in_array('clients:create', $scopes)) {
-                throw new \League\OAuth2\Server\Exception\OAuthServerException('The token is missing the required "clients:create" scope.', 6, 'insufficient_scope', 403);
-            }
-            $body = json_decode((string) $request->getBody(), true);
-            if (json_last_error() !== JSON_ERROR_NONE || !isset($body['client_name'], $body['redirect_uri'], $body['grant_types']) || !array_key_exists('is_confidential', $body)) {
-                $response->getBody()->write(json_encode(['error' => 'Bad Request', 'message' => 'Invalid JSON or missing required fields: client_name, redirect_uri, grant_types, is_confidential.']));
-                $response = $response->withStatus(400);
-                break;
-            }
-            $clientRepo = new \Ecosys\OAuth\Model\Repository\ClientRepository($dbConnection);
-            $clientData = [
-                'client_name' => $body['client_name'],
-                'redirect_uri' => $body['redirect_uri'],
-                'grant_types' => $body['grant_types'],
-                'is_confidential' => (bool)$body['is_confidential']
-            ];
-            $result = $clientRepo->createClient($clientData);
-            if (is_array($result)) {
-                $response->getBody()->write(json_encode(['status' => 'success', 'message' => 'Client application created successfully.', 'client' => $result]));
-                $response = $response->withStatus(201);
-            } else {
-                $response->getBody()->write(json_encode(['error' => 'Internal Server Error', 'message' => 'Could not create client due to a database error.']));
-                $response = $response->withStatus(500);
-            }
-            break;
+        // CLIENTS CRUD can be added here...
 
         default:
             $response->getBody()->write(json_encode(['Application' => 'EcosysOAuthServer', 'status' => 'Running']));
@@ -120,8 +138,7 @@ try {
 } catch (\League\OAuth2\Server\Exception\OAuthServerException $e) {
     $response = $e->generateHttpResponse(new Response());
 } catch (\Exception $e) {
-    $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
-    $response = $response->withStatus(500);
+    $response = $response->withStatus(500)->withBody((new \Laminas\Diactoros\StreamFactory())->createStream(json_encode(['error' => $e->getMessage()])));
 }
 
 // Emit the response
@@ -134,3 +151,4 @@ if (!headers_sent()) {
     }
 }
 echo $response->getBody();
+
