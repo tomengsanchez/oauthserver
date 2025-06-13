@@ -25,3 +25,7 @@ INSERT INTO `oauth_scopes` (`scope`, `description`) VALUES
 ('profile', 'Grants access to user profile information'),
 ('email', 'Grants access to user email address');
 
+
+
+INSERT INTO `oauth_scopes` (`scope`, `description`)
+VALUES ('users:create', 'Allows the creation of new users');

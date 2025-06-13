@@ -1,0 +1,162 @@
+ you need to request the users:create scope when you ask for a new access token.
+
+Here’s how to do it in Postman:
+
+Go back to the /token request tab in Postman (the one you use to get an access token).
+
+In the Body tab, find the row for the scope key.
+
+Add users:create to the value. If you also want the profile scope, the value should look like this: profile users:create.
+
+Click Send to get a new access token. This new token will now have the users:create permission embedded within it.
+
+Copy the new access_token.
+
+Go to your /api/users request tab, update the Bearer Token with the new access token you just copied, and send the request again.
+
+This time, the request should succeed because the token now has the necessary scope to access that endpoint.
+
+
+
+
+External User Creation API Guide
+Overview
+This guide details how external systems can securely add new users to the EcosysOAuthServer through a dedicated REST API endpoint. This process is designed for trusted, server-to-server communication.
+
+All requests must be authenticated using a valid OAuth2 access token that has been granted the specific scope required for user creation.
+
+Authentication
+To use this endpoint, the calling system must first obtain an access token.
+
+Authentication Method: Bearer Token
+
+Required Scope: users:create
+
+The token must be included in the Authorization header of every request.
+
+Recommended Grant Type: For server-to-server interactions, the Client Credentials grant type is the most appropriate method for obtaining an access token. This involves the external system authenticating itself using its client_id and client_secret, without involving a specific end-user.
+
+Endpoint: POST /api/users
+This endpoint creates a new user in the database.
+
+URL: https://ithelp.ecosyscorp.ph/etc-backend/api/users
+
+Method: POST
+
+Headers
+Key
+
+Value
+
+Authorization
+
+Bearer <your_access_token>
+
+Content-Type
+
+application/json
+
+Request Body (JSON)
+The body of the POST request must be a JSON object containing the new user's details.
+
+Field
+
+Type
+
+Required
+
+Description
+
+username
+
+String
+
+Yes
+
+The desired username. Must be unique.
+
+password
+
+String
+
+Yes
+
+The user's password. Should be strong.
+
+first_name
+
+String
+
+No
+
+The user's first name.
+
+last_name
+
+String
+
+No
+
+The user's last name.
+
+email
+
+String
+
+Yes
+
+The user's email address. Must be unique.
+
+Example Body:
+
+{
+  "username": "newsystemuser",
+  "password": "aVeryComplexP@ssw0rd!",
+  "first_name": "Jane",
+  "last_name": "Doe",
+  "email": "jane.doe@externalsystem.com"
+}
+
+Responses
+Success Response
+On successful user creation, the server will respond with a 201 Created status code and a JSON object containing the new user's details (excluding the password).
+
+Code: 201 Created
+Body:
+
+{
+    "status": "success",
+    "message": "User created successfully.",
+    "user": {
+        "username": "newsystemuser",
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "email": "jane.doe@externalsystem.com"
+    }
+}
+
+Error Responses
+400 Bad Request: Sent if required fields are missing from the request body.
+
+401 Unauthorized: Sent if the access_token is missing, invalid, or expired.
+
+403 Forbidden: Sent if the access_token is valid but lacks the required users:create scope.
+
+409 Conflict: Sent if the username or email already exists in the database.
+
+Example cURL Request
+Here is a complete example of how to call the API using cURL.
+
+# First, replace <your_access_token> with a valid token
+
+curl -X POST \
+  https://ithelp.ecosyscorp.ph/etc-backend/api/users \
+  -H 'Authorization: Bearer <your_access_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "username": "newsystemuser",
+    "password": "aVeryComplexP@ssw0rd!",
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "email": "jane.doe@externalsystem.com"
+  }'
