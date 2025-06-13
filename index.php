@@ -52,24 +52,17 @@ try {
             break;
         
         case ($route === '/api/users' && $request->getMethod() === 'POST'):
-            // 1. Authenticate the request
             $request = validate_token($request);
-
-            // 2. Authorize: Check for the required scope
             $scopes = $request->getAttribute('oauth_scopes');
             if (!in_array('users:create', $scopes)) {
                 throw new \League\OAuth2\Server\Exception\OAuthServerException('The token is missing the required "users:create" scope.', 6, 'insufficient_scope', 403);
             }
-            
-            // 3. Get and validate the request body
             $body = json_decode((string) $request->getBody(), true);
             if (json_last_error() !== JSON_ERROR_NONE || !isset($body['username'], $body['password'], $body['email'])) {
                 $response->getBody()->write(json_encode(['error' => 'Bad Request', 'message' => 'Invalid JSON or missing required fields: username, password, email.']));
                 $response = $response->withStatus(400);
                 break;
             }
-
-            // 4. Call the repository to create the user
             $userRepo = new \Ecosys\OAuth\Model\Repository\UserRepository($dbConnection);
             $userData = [
                 'username' => $body['username'],
@@ -79,8 +72,6 @@ try {
                 'email' => $body['email']
             ];
             $result = $userRepo->createUser($userData);
-
-            // 5. Handle the result
             if (is_array($result)) {
                 $response->getBody()->write(json_encode(['status' => 'success', 'message' => 'User created successfully.', 'user' => $result]));
                 $response = $response->withStatus(201);
@@ -89,6 +80,35 @@ try {
                 $response = $response->withStatus(409);
             } else {
                 $response->getBody()->write(json_encode(['error' => 'Internal Server Error', 'message' => 'Could not create user due to a database error.']));
+                $response = $response->withStatus(500);
+            }
+            break;
+
+        case ($route === '/api/clients' && $request->getMethod() === 'POST'):
+            $request = validate_token($request);
+            $scopes = $request->getAttribute('oauth_scopes');
+            if (!in_array('clients:create', $scopes)) {
+                throw new \League\OAuth2\Server\Exception\OAuthServerException('The token is missing the required "clients:create" scope.', 6, 'insufficient_scope', 403);
+            }
+            $body = json_decode((string) $request->getBody(), true);
+            if (json_last_error() !== JSON_ERROR_NONE || !isset($body['client_name'], $body['redirect_uri'], $body['grant_types']) || !array_key_exists('is_confidential', $body)) {
+                $response->getBody()->write(json_encode(['error' => 'Bad Request', 'message' => 'Invalid JSON or missing required fields: client_name, redirect_uri, grant_types, is_confidential.']));
+                $response = $response->withStatus(400);
+                break;
+            }
+            $clientRepo = new \Ecosys\OAuth\Model\Repository\ClientRepository($dbConnection);
+            $clientData = [
+                'client_name' => $body['client_name'],
+                'redirect_uri' => $body['redirect_uri'],
+                'grant_types' => $body['grant_types'],
+                'is_confidential' => (bool)$body['is_confidential']
+            ];
+            $result = $clientRepo->createClient($clientData);
+            if (is_array($result)) {
+                $response->getBody()->write(json_encode(['status' => 'success', 'message' => 'Client application created successfully.', 'client' => $result]));
+                $response = $response->withStatus(201);
+            } else {
+                $response->getBody()->write(json_encode(['error' => 'Internal Server Error', 'message' => 'Could not create client due to a database error.']));
                 $response = $response->withStatus(500);
             }
             break;

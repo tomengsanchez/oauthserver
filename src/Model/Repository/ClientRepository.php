@@ -35,11 +35,9 @@ class ClientRepository implements ClientRepositoryInterface
         $clientEntity->setName($client['name']);
         $clientEntity->setRedirectUri($client['redirect_uri']);
         
-        // The league's ClientTrait needs the secret to be set for confidential clients
         if ($client['is_confidential']) {
             $clientEntity->setClientSecret($client['client_secret']);
         }
-
 
         return $clientEntity;
     }
@@ -55,25 +53,50 @@ class ClientRepository implements ClientRepositoryInterface
             return false;
         }
 
-        // If it's a confidential client, we must validate the secret.
-        // For public clients (like a single-page app), the secret is null.
         if ($client->isConfidential()) {
-             if (!password_verify($clientSecret, $client->getSecret())) {
-                 // The above check will fail because secrets in the DB are not hashed.
-                 // We will do a direct string comparison for this example.
-                 // IN A PRODUCTION ENVIRONMENT, CLIENT SECRETS SHOULD BE HASHED.
-                 if ($clientSecret !== $client->getSecret()) {
-                    return false;
-                 }
-            }
+             if ($clientSecret !== $client->getSecret()) {
+                return false;
+             }
         }
         
-        // You might want to check if the client is allowed to use the requested grant type.
-        // $allowedGrantTypes = explode(',', $client->getGrantTypes());
-        // if (!in_array($grantType, $allowedGrantTypes)) {
-        //     return false;
-        // }
-
         return true;
+    }
+
+    /**
+     * Creates a new client in the database.
+     *
+     * @param array $clientData
+     * @return array|false Returns the new client's data or false on error.
+     */
+    public function createClient(array $clientData)
+    {
+        // Generate a new client ID and secret
+        $clientId = bin2hex(random_bytes(20));
+        $clientSecret = $clientData['is_confidential'] ? bin2hex(random_bytes(40)) : null;
+
+        // In a production environment, client secrets should be hashed.
+        // For this example, we are storing them in plain text.
+
+        $sql = 'INSERT INTO oauth_clients (client_id, client_secret, name, redirect_uri, grant_types, is_confidential) VALUES (:client_id, :client_secret, :name, :redirect_uri, :grant_types, :is_confidential)';
+        $stmt = $this->db->prepare($sql);
+        
+        $stmt->bindParam(':client_id', $clientId);
+        $stmt->bindParam(':client_secret', $clientSecret);
+        $stmt->bindParam(':name', $clientData['client_name']);
+        $stmt->bindParam(':redirect_uri', $clientData['redirect_uri']);
+        $stmt->bindParam(':grant_types', $clientData['grant_types']);
+        $stmt->bindParam(':is_confidential', $clientData['is_confidential'], PDO::PARAM_BOOL);
+
+        if ($stmt->execute()) {
+            return [
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret, // Return the plain secret only on creation
+                'client_name' => $clientData['client_name'],
+                'redirect_uri' => $clientData['redirect_uri'],
+                'grant_types' => $clientData['grant_types']
+            ];
+        }
+
+        return false;
     }
 }

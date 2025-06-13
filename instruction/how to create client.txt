@@ -1,0 +1,108 @@
+Authentication
+To use this endpoint, the calling system must first obtain an access token with the appropriate permissions.
+
+Authentication Method: Bearer Token
+
+Required Scope: clients:create
+
+The token must be included in the Authorization header of every API request. The recommended method for obtaining this token is the Client Credentials grant type.
+
+Endpoint: POST /api/clients
+This endpoint creates a new client application in the database.
+
+URL: https://ithelp.ecosyscorp.ph/etc-backend/api/clients
+
+Method: POST
+
+Headers
+Key
+
+Value
+
+Authorization
+
+Bearer <your_access_token>
+
+Content-Type
+
+application/json
+
+Request Body (JSON)
+The body of the POST request must be a JSON object containing the new client's details.
+
+Field
+
+Type
+
+Required
+
+Description
+
+client_name
+
+String
+
+Yes
+
+A human-readable name for the new client application (e.g., "Ecosys Mobile App").
+
+redirect_uri
+
+String
+
+Yes
+
+The callback URL where the user is redirected after authorization.
+
+grant_types
+
+String
+
+Yes
+
+A comma-separated list of grant types this client is allowed to use (e.g., password,refresh_token).
+
+is_confidential
+
+Boolean
+
+Yes
+
+Set to true if the client can securely store a secret (e.g., a backend service). false for public clients like SPAs.
+
+Example Body:
+
+{
+  "client_name": "New Reporting Dashboard",
+  "redirect_uri": "https://reporting.ecosyscorp.ph/callback",
+  "grant_types": "password,client_credentials,refresh_token",
+  "is_confidential": true
+}
+
+Responses
+Success Response
+On successful client creation, the server will respond with a 201 Created status code. The response body will contain the newly generated client_id and client_secret. The client_secret should be stored securely and will not be retrievable again.
+
+Code: 201 Created
+Body:
+
+{
+    "status": "success",
+    "message": "Client application created successfully.",
+    "client": {
+        "client_id": "a3b7...d9f1",
+        "client_secret": "e5c9...b4a2",
+        "client_name": "New Reporting Dashboard",
+        "redirect_uri": "https://reporting.ecosyscorp.ph/callback",
+        "grant_types": "password,client_credentials,refresh_token"
+    }
+}
+
+Error Responses
+400 Bad Request: Sent if required fields are missing from the request body.
+
+401 Unauthorized: Sent if the access_token is missing, invalid, or expired.
+
+403 Forbidden: Sent if the access_token is valid but lacks the required clients:create scope.
+
+500 Internal Server Error: Sent if there is a problem creating the client in the database.
