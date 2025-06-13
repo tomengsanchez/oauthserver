@@ -1,0 +1,20 @@
+{
+    "Application": {
+        "name": "EcosysOAuthServer",
+        "version": "1.0.0",
+        "description": "A Centralized Authentication Server for Ecosys Applications",
+        "author": "Michael Sanchez",
+        "license": "MIT",
+        "ProgrammingLanguage": "Php",
+        "frontendFramework": "REstful API",
+        "Architecture":"Microservices",
+        "DesignPattern":"MVC",
+        "components": [
+            {
+                "name": "OAuth2 Server",
+                "description": "Handles OAuth2 authentication and authorization",
+                "version": "8.3"
+            }
+        ]
+    }
+}

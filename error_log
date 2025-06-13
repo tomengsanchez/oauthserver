@@ -1,0 +1,59 @@
+[13-Jun-2025 06:34:43 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method Ecosys\OAuth\Model\Entity\ClientEntity::setClientSecret() in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/ClientRepository.php:40
+Stack trace:
+#0 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/ClientRepository.php(52): Ecosys\OAuth\Model\Repository\ClientRepository->getClientEntity()
+#1 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/AbstractGrant.php(196): Ecosys\OAuth\Model\Repository\ClientRepository->validateClient()
+#2 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/PasswordGrant.php(54): League\OAuth2\Server\Grant\AbstractGrant->validateClient()
+#3 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/AuthorizationServer.php(201): League\OAuth2\Server\Grant\PasswordGrant->respondToAccessTokenRequest()
+#4 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Controller/TokenController.php(74): League\OAuth2\Server\AuthorizationServer->respondToAccessTokenRequest()
+#5 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/index.php(58): Ecosys\OAuth\Controller\TokenController->issueToken()
+#6 {main}
+  thrown in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/ClientRepository.php on line 40
+[13-Jun-2025 06:35:51 UTC] PHP Deprecated:  Creation of dynamic property Ecosys\OAuth\Model\Entity\ClientEntity::$secret is deprecated in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Entity/ClientEntity.php on line 36
+[13-Jun-2025 06:35:51 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method Ecosys\OAuth\Model\Entity\ClientEntity::getSecret() in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/ClientRepository.php:61
+Stack trace:
+#0 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/AbstractGrant.php(196): Ecosys\OAuth\Model\Repository\ClientRepository->validateClient()
+#1 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/PasswordGrant.php(54): League\OAuth2\Server\Grant\AbstractGrant->validateClient()
+#2 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/AuthorizationServer.php(201): League\OAuth2\Server\Grant\PasswordGrant->respondToAccessTokenRequest()
+#3 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Controller/TokenController.php(74): League\OAuth2\Server\AuthorizationServer->respondToAccessTokenRequest()
+#4 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/index.php(58): Ecosys\OAuth\Controller\TokenController->issueToken()
+#5 {main}
+  thrown in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/ClientRepository.php on line 61
+[13-Jun-2025 06:36:27 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method Ecosys\OAuth\Model\Entity\ClientEntity::getSecret() in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/ClientRepository.php:61
+Stack trace:
+#0 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/AbstractGrant.php(196): Ecosys\OAuth\Model\Repository\ClientRepository->validateClient()
+#1 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/PasswordGrant.php(54): League\OAuth2\Server\Grant\AbstractGrant->validateClient()
+#2 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/AuthorizationServer.php(201): League\OAuth2\Server\Grant\PasswordGrant->respondToAccessTokenRequest()
+#3 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Controller/TokenController.php(74): League\OAuth2\Server\AuthorizationServer->respondToAccessTokenRequest()
+#4 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/index.php(58): Ecosys\OAuth\Controller\TokenController->issueToken()
+#5 {main}
+  thrown in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/ClientRepository.php on line 61
+[13-Jun-2025 06:36:56 UTC] PHP Fatal error:  Class Ecosys\OAuth\Model\Entity\ScopeEntity contains 1 abstract method and must therefore be declared abstract or implement the remaining methods (JsonSerializable::jsonSerialize) in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Entity/ScopeEntity.php on line 8
+[13-Jun-2025 06:43:43 UTC] PHP Fatal error:  Uncaught Error: Class "Ecosys\OAuth\Model\Entity\AccessTokenEntity" not found in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/AccessTokenRepository.php:25
+Stack trace:
+#0 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/AbstractGrant.php(457): Ecosys\OAuth\Model\Repository\AccessTokenRepository->getNewToken()
+#1 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/PasswordGrant.php(62): League\OAuth2\Server\Grant\AbstractGrant->issueAccessToken()
+#2 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/AuthorizationServer.php(201): League\OAuth2\Server\Grant\PasswordGrant->respondToAccessTokenRequest()
+#3 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Controller/TokenController.php(74): League\OAuth2\Server\AuthorizationServer->respondToAccessTokenRequest()
+#4 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/index.php(58): Ecosys\OAuth\Controller\TokenController->issueToken()
+#5 {main}
+  thrown in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/AccessTokenRepository.php on line 25
+[13-Jun-2025 06:43:46 UTC] PHP Fatal error:  Uncaught Error: Class "Ecosys\OAuth\Model\Entity\AccessTokenEntity" not found in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/AccessTokenRepository.php:25
+Stack trace:
+#0 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/AbstractGrant.php(457): Ecosys\OAuth\Model\Repository\AccessTokenRepository->getNewToken()
+#1 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/PasswordGrant.php(62): League\OAuth2\Server\Grant\AbstractGrant->issueAccessToken()
+#2 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/AuthorizationServer.php(201): League\OAuth2\Server\Grant\PasswordGrant->respondToAccessTokenRequest()
+#3 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Controller/TokenController.php(74): League\OAuth2\Server\AuthorizationServer->respondToAccessTokenRequest()
+#4 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/index.php(58): Ecosys\OAuth\Controller\TokenController->issueToken()
+#5 {main}
+  thrown in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/AccessTokenRepository.php on line 25
+[13-Jun-2025 06:43:54 UTC] PHP Fatal error:  Uncaught Error: Class "Ecosys\OAuth\Model\Entity\AccessTokenEntity" not found in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/AccessTokenRepository.php:25
+Stack trace:
+#0 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/AbstractGrant.php(457): Ecosys\OAuth\Model\Repository\AccessTokenRepository->getNewToken()
+#1 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/Grant/PasswordGrant.php(62): League\OAuth2\Server\Grant\AbstractGrant->issueAccessToken()
+#2 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/AuthorizationServer.php(201): League\OAuth2\Server\Grant\PasswordGrant->respondToAccessTokenRequest()
+#3 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Controller/TokenController.php(74): League\OAuth2\Server\AuthorizationServer->respondToAccessTokenRequest()
+#4 /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/index.php(58): Ecosys\OAuth\Controller\TokenController->issueToken()
+#5 {main}
+  thrown in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/src/Model/Repository/AccessTokenRepository.php on line 25
+[13-Jun-2025 06:50:29 UTC] PHP Notice:  Key file "file:///home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/public.key" permissions are not correct, recommend changing to 600 or 660 instead of 664 in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/CryptKey.php on line 74
+[13-Jun-2025 06:50:38 UTC] PHP Notice:  Key file "file:///home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/public.key" permissions are not correct, recommend changing to 600 or 660 instead of 664 in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/vendor/league/oauth2-server/src/CryptKey.php on line 74
