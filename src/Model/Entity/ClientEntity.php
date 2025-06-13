@@ -10,12 +10,8 @@ class ClientEntity implements ClientEntityInterface
 {
     use EntityTrait, ClientTrait;
 
-    /**
-     * The client's secret.
-     * This is declared to prevent the dynamic property creation deprecation notice.
-     * @var ?string
-     */
     protected $secret;
+    protected $scopes = []; // Added to hold the client's allowed scopes
 
     public function __construct($clientIdentifier)
     {
@@ -32,30 +28,36 @@ class ClientEntity implements ClientEntityInterface
         $this->redirectUri = $uri;
     }
 
-    /**
-     * Set the client's secret.
-     *
-     * @param string $secret
-     */
     public function setClientSecret($secret)
     {
         $this->secret = $secret;
     }
 
-    /**
-     * Get the client's secret.
-     * This method was added to resolve the fatal error.
-     *
-     * @return string|null
-     */
     public function getSecret()
     {
         return $this->secret;
     }
+
+    /**
+     * Set the client's allowed scopes.
+     * @param array $scopes
+     */
+    public function setScopes(array $scopes)
+    {
+        $this->scopes = $scopes;
+    }
+
+    /**
+     * Get the client's allowed scopes.
+     * @return array
+     */
+    public function getScopes()
+    {
+        return $this->scopes;
+    }
     
     public function isConfidential()
     {
-        // For this server, all clients that have a secret are confidential.
         return !empty($this->secret);
     }
 }

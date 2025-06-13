@@ -44,14 +44,19 @@ class ScopeRepository implements ScopeRepositoryInterface
         ClientEntityInterface $clientEntity,
         $userIdentifier = null
     ) {
-        // Here you can filter the scopes based on grant type, client, or user.
-        // For example, a certain user might not be allowed to grant a 'delete' scope.
-        // For this example, we'll return all valid requested scopes.
-        
+        // Get the list of scopes this client is allowed to request.
+        $allowedScopes = $clientEntity->getScopes();
+
+        // If the client has no scopes defined, deny all for security.
+        if (empty($allowedScopes)) {
+            return [];
+        }
+
         $validatedScopes = [];
-        foreach ($scopes as $scope) {
-            if ($this->getScopeEntityByIdentifier($scope->getIdentifier())) {
-                 $validatedScopes[] = $scope;
+        foreach ($scopes as $requestedScope) {
+            // Check if the requested scope is in the client's list of allowed scopes.
+            if (in_array($requestedScope->getIdentifier(), $allowedScopes)) {
+                 $validatedScopes[] = $requestedScope;
             }
         }
 

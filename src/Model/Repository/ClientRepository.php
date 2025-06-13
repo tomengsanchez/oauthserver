@@ -38,6 +38,11 @@ class ClientRepository implements ClientRepositoryInterface
         if ($client['is_confidential']) {
             $clientEntity->setClientSecret($client['client_secret']);
         }
+        
+        // Read scopes from the database, split the string into an array, and set it.
+        $scopes = $client['scope'] ? explode(' ', $client['scope']) : [];
+        $clientEntity->setScopes($scopes);
+
 
         return $clientEntity;
     }
@@ -64,33 +69,31 @@ class ClientRepository implements ClientRepositoryInterface
 
     /**
      * Creates a new client in the database.
-     *
-     * @param array $clientData
-     * @return array|false Returns the new client's data or false on error.
      */
     public function createClient(array $clientData)
     {
-        // Generate a new client ID and secret
         $clientId = bin2hex(random_bytes(20));
         $clientSecret = $clientData['is_confidential'] ? bin2hex(random_bytes(40)) : null;
 
-        // In a production environment, client secrets should be hashed.
-        // For this example, we are storing them in plain text.
-
-        $sql = 'INSERT INTO oauth_clients (client_id, client_secret, name, redirect_uri, grant_types, is_confidential) VALUES (:client_id, :client_secret, :name, :redirect_uri, :grant_types, :is_confidential)';
+        $sql = 'INSERT INTO oauth_clients (client_id, client_secret, name, redirect_uri, grant_types, is_confidential, scope) VALUES (:client_id, :client_secret, :name, :redirect_uri, :grant_types, :is_confidential, :scope)';
         $stmt = $this->db->prepare($sql);
         
+        // Note: You could add 'scope' to the client creation API as well.
+        // For now, we set it to an empty string.
+        $scope = '';
+
         $stmt->bindParam(':client_id', $clientId);
         $stmt->bindParam(':client_secret', $clientSecret);
         $stmt->bindParam(':name', $clientData['client_name']);
         $stmt->bindParam(':redirect_uri', $clientData['redirect_uri']);
         $stmt->bindParam(':grant_types', $clientData['grant_types']);
         $stmt->bindParam(':is_confidential', $clientData['is_confidential'], PDO::PARAM_BOOL);
+        $stmt->bindParam(':scope', $scope);
 
         if ($stmt->execute()) {
             return [
                 'client_id' => $clientId,
-                'client_secret' => $clientSecret, // Return the plain secret only on creation
+                'client_secret' => $clientSecret,
                 'client_name' => $clientData['client_name'],
                 'redirect_uri' => $clientData['redirect_uri'],
                 'grant_types' => $clientData['grant_types']

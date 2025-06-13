@@ -1,0 +1,108 @@
+Development Tracker: EcosysOAuthServer
+Date: June 13, 2025
+Location: Quezon City, Metro Manila, Philippines
+
+This document summarizes the development progress, features implemented, and issues resolved for the EcosysOAuthServer project.
+
+I. Project Initialization & Core Setup
+Status: ✅ Complete
+
+Details:
+
+Established the initial project structure based on structure.json.
+
+Implemented a basic index.php router and a .htaccess file for clean URL rewriting.
+
+Set up the database schema by providing SQL for install_table.sql and install_data.sql, including initial test data for users and clients.
+
+II. MVC Architecture Implementation
+Status: ✅ Complete
+
+Details:
+
+Adopted the Model-View-Controller (MVC) pattern for the API.
+
+Created the src directory structure (Controller, Model/Entity, Model/Repository).
+
+Configured Composer's psr-4 autoloader (later supplemented with a manual autoloader for robustness).
+
+Built all required Model components:
+
+Entities: ClientEntity, UserEntity, ScopeEntity, AccessTokenEntity.
+
+Repositories: ClientRepository, UserRepository, ScopeRepository, AccessTokenRepository, RefreshTokenRepository.
+
+Built the main Controller: TokenController.
+
+III. Core OAuth2 Server Functionality
+Status: ✅ Complete
+
+Details:
+
+Successfully integrated the league/oauth2-server library.
+
+Generated and configured private.key and public.key for JWT signing.
+
+Implemented the Password Grant, allowing users to authenticate with a username and password to receive an access token.
+
+Implemented the Refresh Token Grant, allowing clients to obtain new access tokens without re-prompting for credentials.
+
+IV. API Feature Expansion
+Status: ✅ Complete
+
+Details:
+
+Protected Resource Endpoint (/api/profile):
+
+Created an endpoint that requires a valid access token.
+
+Implemented token validation using the server's public key.
+
+User Creation Endpoint (/api/users):
+
+Designed and documented the endpoint in a user guide.
+
+Added the users:create scope for authorization.
+
+Implemented the business logic to create new users via a POST request.
+
+Client Creation Endpoint (/api/clients):
+
+Designed and documented the endpoint in a user guide.
+
+Added the clients:create scope for authorization.
+
+Implemented the business logic to programmatically register new client applications.
+
+V. Security Enhancements
+Status: ✅ Complete
+
+Details:
+
+Per-Client Scopes:
+
+Upgraded the system to allow defining a specific list of authorized scopes for each client application.
+
+The ScopeRepository was updated to enforce these restrictions, preventing clients from requesting permissions they are not allowed.
+
+File Permissions:
+
+Identified and provided a fix for a security notice regarding overly permissive file permissions (664) on the public.key and private.key files, recommending a change to 600.
+
+VI. Debugging & Troubleshooting Log
+Status: ✅ Resolved
+
+Details: A summary of issues encountered and their resolutions.
+
+Class not found Errors: Resolved multiple "class not found" errors by implementing a manual autoloader and creating the missing AccessTokenEntity.php file.
+
+invalid_grant Error: Diagnosed that the password hash in the database was incorrect. Provided a script to generate a valid hash and an UPDATE query to fix the user's credentials.
+
+access_denied (Token Revoked) Error: Diagnosed that the access_token column in the database was too small (VARCHAR(40)), causing JWTs to be truncated. Provided ALTER TABLE commands to change the column type to TEXT and fix the primary key, resolving the issue.
+
+insufficient_scope Error: Clarified the correct procedure for requesting specific scopes during the token request process.
+
+Miscellaneous PHP Errors: Fixed various "undefined method," "undefined property," and "must implement abstract methods" errors by adding the required code to the entity classes.
+
+Project Status Summary
+The EcosysOAuthServer is fully functional and feature-complete based on our development session. It provides secure authentication, token management, and API-driven administration of users and clients.
