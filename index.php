@@ -1,4 +1,35 @@
 <?php
+
+// --- CORS HANDLING ---
+// This code allows multiple frontend origins to make API requests.
+$allowed_origins = [
+    'https://account.ecosyscorp.ph',
+    'https://another-website.com', // Add your other allowed website here
+    'http://localhost:3000'         // Example for local development
+];
+
+if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowed_origins)) {
+    header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+}
+
+header("Access-Control-Allow-Headers: Authorization, Content-Type, Accept");
+header("Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS");
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    // Return an OK response for the preflight request
+    http_response_code(200);
+    exit();
+}
+// --- END CORS HANDLING ---
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    // Return an OK response for the preflight request
+    http_response_code(200);
+    exit();
+}
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -35,6 +66,42 @@ try {
         case ($route === 'token'):
             $controller = new TokenController($dbConnection);
             $response = $controller->issueToken($request);
+            break;
+        
+        // --- NEW PUBLIC REGISTRATION ROUTE ---
+        case ($route === 'api/register' && $request->getMethod() === 'POST'):
+            $body = json_decode((string) $request->getBody(), true);
+            
+            // 1. Validate the incoming data
+            if (json_last_error() !== JSON_ERROR_NONE || !isset($body['client_id'], $body['username'], $body['password'], $body['email'])) {
+                $response = $response->withStatus(400)->withBody((new \Laminas\Diactoros\StreamFactory())->createStream(json_encode(['error' => 'Bad Request', 'message' => 'Invalid JSON or missing required fields: client_id, username, password, email.'])));
+                break;
+            }
+
+            // 2. Security Check: Validate the Client ID
+            $clientRepo = new \Ecosys\OAuth\Model\Repository\ClientRepository($dbConnection);
+            if (!$clientRepo->getClientEntity($body['client_id'])) {
+                $response = $response->withStatus(401)->withBody((new \Laminas\Diactoros\StreamFactory())->createStream(json_encode(['error' => 'Unauthorized', 'message' => 'Invalid client ID.'])));
+                break;
+            }
+
+            // 3. Create the user
+            $userRepo = new \Ecosys\OAuth\Model\Repository\UserRepository($dbConnection);
+            $userData = [
+                'username' => $body['username'],
+                'password' => $body['password'],
+                'first_name' => $body['first_name'] ?? null,
+                'last_name' => $body['last_name'] ?? null,
+                'email' => $body['email']
+            ];
+            $result = $userRepo->createUser($userData);
+
+            // 4. Handle the response
+            if (is_array($result)) {
+                $response = $response->withStatus(201)->withBody((new \Laminas\Diactoros\StreamFactory())->createStream(json_encode(['status' => 'success', 'message' => 'User registered successfully.', 'user' => $result])));
+            } else { // 'username_exists' or 'email_exists'
+                $response = $response->withStatus(409)->withBody((new \Laminas\Diactoros\StreamFactory())->createStream(json_encode(['error' => 'Conflict', 'message' => 'A user with that username or email already exists.'])));
+            }
             break;
 
         case ($route === 'api/profile' && $request->getMethod() === 'GET'):
@@ -90,7 +157,6 @@ try {
             $userRepo = new \Ecosys\OAuth\Model\Repository\UserRepository($dbConnection);
             $user = $userRepo->getUserEntityByIdentifier($username);
             if ($user) {
-                // FIX: Wrapped the user object in a 'user' key to make the response consistent.
                 $response->getBody()->write(json_encode(['status' => 'success', 'user' => $user]));
             } else {
                 $response = $response->withStatus(404);

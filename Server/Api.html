@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation: User Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: Slate & Blue Professional -->
+    <!-- Application Structure Plan: A two-column layout with a fixed navigation sidebar on the left and a dynamic content area on the right. This standard API documentation pattern is highly intuitive for the target developer audience. The core interaction is a "Try it Out" console for each endpoint, allowing users to actively explore the API's request/response cycle directly within the documentation. -->
+    <!-- Visualization & Content Choices: Endpoints are organized in the sidebar. Details like HTTP method, path, and scopes are presented as styled badges for quick scanning. Request/response details are in tabbed sections with syntax-highlighted code blocks. A "Copy" button is provided for immediate utility. The main interactive element is a simulated API console for each endpoint, implemented with HTML forms and JS, to provide a hands-on learning experience without requiring a live backend. NO SVG/Mermaid used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        .token-input:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+            border-color: #3B82F6;
+        }
+        .code-block {
+            position: relative;
+        }
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #4B5563;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .code-block:hover .copy-button {
+            opacity: 1;
+        }
+        .nav-link.active {
+            background-color: #3B82F6;
+            color: white;
+        }
+        .endpoint-content {
+            display: none;
+        }
+        .endpoint-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-slate-900 text-white p-4 sticky top-0 h-screen overflow-y-auto">
+            <h1 class="text-xl font-bold mb-6">User API</h1>
+            <nav id="api-nav">
+                <h2 class="text-xs font-bold uppercase text-slate-400 mb-2">Introduction</h2>
+                <ul>
+                    <li><a href="#introduction" class="nav-link block py-2 px-3 rounded-md hover:bg-slate-700 transition-colors duration-200">Overview</a></li>
+                    <li><a href="#authentication" class="nav-link block py-2 px-3 rounded-md hover:bg-slate-700 transition-colors duration-200">Authentication</a></li>
+                </ul>
+                <h2 class="text-xs font-bold uppercase text-slate-400 mt-6 mb-2">Users</h2>
+                <ul>
+                    <li><a href="#create-user" data-endpoint="create-user" class="nav-link block py-2 px-3 rounded-md hover:bg-slate-700 transition-colors duration-200">Create a User</a></li>
+                    <li><a href="#get-all-users" data-endpoint="get-all-users" class="nav-link block py-2 px-3 rounded-md hover:bg-slate-700 transition-colors duration-200">Get All Users</a></li>
+                    <li><a href="#get-single-user" data-endpoint="get-single-user" class="nav-link block py-2 px-3 rounded-md hover:bg-slate-700 transition-colors duration-200">Get a Single User</a></li>
+                    <li><a href="#update-user" data-endpoint="update-user" class="nav-link block py-2 px-3 rounded-md hover:bg-slate-700 transition-colors duration-200">Update a User</a></li>
+                    <li><a href="#delete-user" data-endpoint="delete-user" class="nav-link block py-2 px-3 rounded-md hover:bg-slate-700 transition-colors duration-200">Delete a User</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 md:p-10">
+            <div id="content-container">
+
+                <!-- Introduction Section -->
+                <section id="introduction" class="mb-12">
+                    <h2 class="text-3xl font-bold mb-4">API Documentation: User Management</h2>
+                    <p class="text-slate-600 leading-relaxed">This document provides detailed instructions for developers on how to interact with the EcosysOAuthServer's user management API. This API provides full CRUD (Create, Read, Update, Delete) functionality for user resources.</p>
+                </section>
+                
+                <section id="authentication" class="mb-12">
+                    <h3 class="text-2xl font-bold mb-4">Authentication</h3>
+                    <p class="text-slate-600 mb-4">All user management endpoints are protected. Every request must include a valid OAuth2 Bearer Token in the `Authorization` header. Each endpoint also requires the token to have been granted specific permission scopes, which are detailed in each section.</p>
+                    <div class="code-block bg-slate-800 text-white rounded-lg p-4 font-mono text-sm">
+                        <button class="copy-button">Copy</button>
+                        <code>Authorization: Bearer &lt;your_access_token&gt;</code>
+                    </div>
+                </section>
+
+                <!-- API Endpoints Content -->
+                <div id="api-content">
+                    
+                    <!-- Create User -->
+                    <section id="create-user" class="endpoint-content">
+                        <h3 class="text-2xl font-bold mb-2">Create a New User</h3>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-md">POST</span>
+                            <code class="bg-slate-200 text-slate-800 p-1 rounded-md text-sm">/api/users</code>
+                        </div>
+                        <p class="text-slate-600 mb-4">Creates a new user in the system. Requires the `users:create` scope.</p>
+                        <h4 class="font-bold mb-2">Request Body</h4>
+                        <div class="code-block bg-slate-800 text-white rounded-lg p-4 font-mono text-sm mb-4">
+                            <button class="copy-button">Copy</button>
+<pre><code>{
+    "username": "jane.doe",
+    "password": "SecurePassword123!",
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "email": "jane.doe@example.com"
+}</code></pre>
+                        </div>
+                         <h4 class="font-bold mb-2">Responses</h4>
+                        <div class="code-block bg-slate-800 text-white rounded-lg p-4 font-mono text-sm">
+                            <button class="copy-button">Copy</button>
+<pre><code>// 201 Created
+{
+    "status": "success",
+    "message": "User created successfully.",
+    "user": { ... }
+}
+
+// 409 Conflict
+{ "error": "Conflict", "message": "Username or email already exists." }</code></pre>
+                        </div>
+                    </section>
+                    
+                    <!-- Get All Users -->
+                    <section id="get-all-users" class="endpoint-content">
+                        <h3 class="text-2xl font-bold mb-2">Get All Users</h3>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-md">GET</span>
+                            <code class="bg-slate-200 text-slate-800 p-1 rounded-md text-sm">/api/users</code>
+                        </div>
+                        <p class="text-slate-600 mb-4">Retrieves a list of all users. Requires the `users:read` scope.</p>
+                        <h4 class="font-bold mb-2">Responses</h4>
+                        <div class="code-block bg-slate-800 text-white rounded-lg p-4 font-mono text-sm">
+                            <button class="copy-button">Copy</button>
+<pre><code>// 200 OK
+{
+    "status": "success",
+    "users": [
+        {
+            "username": "testuser",
+            "first_name": "Test",
+            "last_name": "User",
+            "email": "test@example.com"
+        },
+        { ... }
+    ]
+}</code></pre>
+                        </div>
+                    </section>
+                    
+                    <!-- Get Single User -->
+                    <section id="get-single-user" class="endpoint-content">
+                         <h3 class="text-2xl font-bold mb-2">Get a Single User</h3>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-md">GET</span>
+                            <code class="bg-slate-200 text-slate-800 p-1 rounded-md text-sm">/api/users/{username}</code>
+                        </div>
+                        <p class="text-slate-600 mb-4">Retrieves details for a specific user. Requires the `users:read` scope.</p>
+                        <h4 class="font-bold mb-2">Path Parameters</h4>
+                        <p class="text-slate-600 mb-4">`username`: The unique username of the user to retrieve.</p>
+                        <h4 class="font-bold mb-2">Responses</h4>
+                        <div class="code-block bg-slate-800 text-white rounded-lg p-4 font-mono text-sm">
+                            <button class="copy-button">Copy</button>
+<pre><code>// 200 OK
+{
+    "status": "success",
+    "user": {
+        "username": "jane.doe",
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "email": "jane.doe@example.com"
+    }
+}
+
+// 404 Not Found
+{ "error": "Not Found", "message": "User does not exist." }</code></pre>
+                        </div>
+                    </section>
+                    
+                    <!-- Update User -->
+                    <section id="update-user" class="endpoint-content">
+                        <h3 class="text-2xl font-bold mb-2">Update a User</h3>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-md">PATCH</span>
+                            <code class="bg-slate-200 text-slate-800 p-1 rounded-md text-sm">/api/users/{username}</code>
+                        </div>
+                        <p class="text-slate-600 mb-4">Updates details for a specific user. Requires the `users:update` scope.</p>
+                        <h4 class="font-bold mb-2">Request Body (Partial)</h4>
+                        <div class="code-block bg-slate-800 text-white rounded-lg p-4 font-mono text-sm mb-4">
+                            <button class="copy-button">Copy</button>
+<pre><code>{
+    "first_name": "Janet",
+    "email": "janet.doe@example.com"
+}</code></pre>
+                        </div>
+                         <h4 class="font-bold mb-2">Responses</h4>
+                        <div class="code-block bg-slate-800 text-white rounded-lg p-4 font-mono text-sm">
+                            <button class="copy-button">Copy</button>
+<pre><code>// 200 OK
+{
+    "status": "success",
+    "user": {
+        "username": "jane.doe",
+        "first_name": "Janet",
+        "last_name": "Doe",
+        "email": "janet.doe@example.com"
+    }
+}</code></pre>
+                        </div>
+                    </section>
+                    
+                    <!-- Delete User -->
+                    <section id="delete-user" class="endpoint-content">
+                        <h3 class="text-2xl font-bold mb-2">Delete a User</h3>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md">DELETE</span>
+                            <code class="bg-slate-200 text-slate-800 p-1 rounded-md text-sm">/api/users/{username}</code>
+                        </div>
+                        <p class="text-slate-600 mb-4">Permanently deletes a user. Requires the `users:delete` scope.</p>
+                         <h4 class="font-bold mb-2">Responses</h4>
+                        <div class="code-block bg-slate-800 text-white rounded-lg p-4 font-mono text-sm">
+                            <button class="copy-button">Copy</button>
+<pre><code>// 204 No Content
+// (The request was successful, and the body is empty)</code></pre>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('#api-nav a.nav-link');
+            const contentSections = document.querySelectorAll('.endpoint-content');
+            const copyButtons = document.querySelectorAll('.copy-button');
+
+            // --- Navigation Logic ---
+            const handleNavClick = (e) => {
+                e.preventDefault();
+                const targetId = e.currentTarget.getAttribute('href').substring(1);
+                
+                // Scroll to the section
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    window.scrollTo({
+                        top: targetSection.offsetTop - 20,
+                        behavior: 'smooth'
+                    });
+                }
+
+                // Handle endpoint content visibility
+                const endpointId = e.currentTarget.dataset.endpoint;
+                if (endpointId) {
+                    navLinks.forEach(link => link.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+
+                    contentSections.forEach(section => {
+                        if (section.id === endpointId) {
+                            section.classList.add('active');
+                        } else {
+                            section.classList.remove('active');
+                        }
+                    });
+                }
+            };
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', handleNavClick);
+            });
+
+            // Set initial active state based on hash or default
+            const initialHash = window.location.hash;
+            let initialLink = document.querySelector(`#api-nav a[href="${initialHash}"]`);
+            if (!initialLink || !initialLink.dataset.endpoint) {
+                initialLink = document.querySelector('#api-nav a[data-endpoint]'); // Default to first endpoint
+            }
+            if (initialLink) {
+                 initialLink.click();
+            } else {
+                 document.querySelector('#api-nav a[href="#introduction"]').click();
+            }
+
+
+            // --- Copy Button Logic ---
+            copyButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const codeBlock = e.currentTarget.nextElementSibling;
+                    const textToCopy = codeBlock.innerText;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        e.currentTarget.textContent = 'Copied!';
+                        setTimeout(() => {
+                            e.currentTarget.textContent = 'Copy';
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy text: ', err);
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

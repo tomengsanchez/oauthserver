@@ -41,3 +41,6 @@ INSERT INTO `oauth_scopes` (`scope`, `description`) VALUES
 ('users:read', 'Allows reading user information'),
 ('users:update', 'Allows updating user information'),
 ('users:delete', 'Allows deleting users');
+
+INSERT INTO `oauth_scopes` (`scope`, `description`)
+VALUES ('users:list', 'Allows the listing of users. Just filtered via the API');
