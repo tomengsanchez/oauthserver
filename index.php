@@ -23,13 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 // --- END CORS HANDLING ---
 
-// Handle preflight OPTIONS request
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    // Return an OK response for the preflight request
-    http_response_code(200);
-    exit();
-}
-
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -67,7 +60,29 @@ try {
             $controller = new TokenController($dbConnection);
             $response = $controller->issueToken($request);
             break;
-        
+
+        // --- UPDATED LOGOUT ROUTE ---
+        case ($route === 'api/logout' && $request->getMethod() === 'POST'):
+            // First, validate the token to ensure the request is authenticated.
+            // This now correctly captures the validated request object.
+            $request = validate_token($request);
+
+            // Extract the token string from the Authorization header
+            $authHeader = $request->getHeaderLine('Authorization');
+            $token = trim(str_replace('Bearer', '', $authHeader));
+
+            if (empty($token)) {
+                 $response = $response->withStatus(400)->withBody((new \Laminas\Diactoros\StreamFactory())->createStream(json_encode(['error' => 'Bad Request', 'message' => 'Bearer token not provided.'])));
+                 break;
+            }
+
+            // Instantiate the repository and revoke the token
+            $accessTokenRepo = new \Ecosys\OAuth\Model\Repository\AccessTokenRepository($dbConnection);
+            $accessTokenRepo->revokeAccessToken($token);
+
+            $response->getBody()->write(json_encode(['status' => 'success', 'message' => 'You have been successfully logged out.']));
+            break;
+
         // --- NEW PUBLIC REGISTRATION ROUTE ---
         case ($route === 'api/register' && $request->getMethod() === 'POST'):
             $body = json_decode((string) $request->getBody(), true);
@@ -217,4 +232,3 @@ if (!headers_sent()) {
     }
 }
 echo $response->getBody();
-

@@ -1,0 +1,1 @@
+[16-Jun-2025 09:02:48 UTC] PHP Warning:  http_response_code(): Cannot set response code - headers already sent (output started at /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/migration.php:41) in /home/uskujc2375lw/ithelp.ecosyscorp.ph/etc-backend/migration.php on line 134

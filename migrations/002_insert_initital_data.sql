@@ -1,46 +1,39 @@
-/* This is the data installer */-- install_data.sql
+-- install_data.sql (Idempotent Version)
+-- This version uses `INSERT IGNORE` to prevent errors if the script is run more than once.
+-- It will simply skip inserting rows where the primary key already exists.
 
 --
 -- Insert a sample client
--- This client will be used by your applications to authenticate against the OAuth server.
--- It's a "confidential" client, meaning it has a client_id and a client_secret.
--- It's allowed to use the 'password' and 'client_credentials' grant types.
 --
-INSERT INTO `oauth_clients` (`client_id`, `client_secret`, `name`, `redirect_uri`, `grant_types`, `is_confidential`) VALUES
+INSERT IGNORE INTO `oauth_clients` (`client_id`, `client_secret`, `name`, `redirect_uri`, `grant_types`, `is_confidential`) VALUES
 ('testclient', 'testsecret', 'Test Client App', 'https://ithelp.ecosyscorp.ph/etc-backend/callback', 'password,client_credentials,refresh_token', 1);
 
 --
 -- Insert a sample user
 -- The password is 'testpass', hashed with PHP's password_hash() using PASSWORD_BCRYPT.
 --
-INSERT INTO `oauth_users` (`username`, `password`, `first_name`, `last_name`, `email`) VALUES
+INSERT IGNORE INTO `oauth_users` (`username`, `password`, `first_name`, `last_name`, `email`) VALUES
 ('testuser', '$2y$10$KK897gGGEAqKmnKiWl938uMZd1/M2wWr7ESfiB2Hs4LSsM8NYdiwe', 'Test', 'User', 'test@example.com');
 
 --
 -- Insert some sample scopes
--- Scopes are used to limit an application's access to a user's account.
 --
-INSERT INTO `oauth_scopes` (`scope`, `description`) VALUES
+INSERT IGNORE INTO `oauth_scopes` (`scope`, `description`) VALUES
 ('basic', 'Grants basic read access'),
 ('profile', 'Grants access to user profile information'),
-('email', 'Grants access to user email address');
-
-
-
-INSERT INTO `oauth_scopes` (`scope`, `description`)
-VALUES ('users:create', 'Allows the creation of new users');
-
-INSERT INTO `oauth_scopes` (`scope`, `description`)
-VALUES ('clients:create', 'Allows the creation of new client applications');
-
-UPDATE `oauth_clients`
-SET `scope` = 'profile users:create clients:create'
-WHERE `client_id` = 'testclient';
-
-INSERT INTO `oauth_scopes` (`scope`, `description`) VALUES
+('email', 'Grants access to user email address'),
+('users:create', 'Allows the creation of new users'),
+('clients:create', 'Allows the creation of new client applications'),
 ('users:read', 'Allows reading user information'),
 ('users:update', 'Allows updating user information'),
-('users:delete', 'Allows deleting users');
+('users:delete', 'Allows deleting users'),
+('users:list', 'Allows the listing of users. Just filtered via the API');
 
-INSERT INTO `oauth_scopes` (`scope`, `description`)
-VALUES ('users:list', 'Allows the listing of users. Just filtered via the API');
+
+--
+-- Update the test client to include all the new scopes.
+-- Using `ON DUPLICATE KEY UPDATE` is safer for updates than a separate `UPDATE` query.
+--
+INSERT INTO `oauth_clients` (`client_id`, `scope`)
+VALUES ('testclient', 'profile users:create clients:create users:read users:update users:delete users:list')
+ON DUPLICATE KEY UPDATE `scope` = 'profile users:create clients:create users:read users:update users:delete users:list';

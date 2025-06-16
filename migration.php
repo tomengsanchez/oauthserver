@@ -7,6 +7,9 @@
  * It scans a 'migrations' directory for .sql files, executes any that have
  * not yet been run, and tracks the executed migrations in the database.
  *
+ * This version removes explicit transaction handling to avoid conflicts with
+ * SQL commands (like CREATE TABLE) that cause implicit commits.
+ *
  * Usage:
  * 1. Create a 'migrations' directory in the project root.
  * 2. Place your .sql files in the 'migrations' directory, prefixed with numbers
@@ -100,29 +103,22 @@ try {
             echo "Running migration: $filename\n";
             echo "--------------------------------------------------\n";
 
-            // Begin a transaction
-            $pdo->beginTransaction();
-
             try {
+                // Execute the entire SQL file.
                 $sql = file_get_contents($file);
                 if ($sql === false) {
                     throw new Exception("Could not read file: $filename");
                 }
-                
                 $pdo->exec($sql);
                 
-                // If successful, record it in the migrations table
+                // If execution was successful, log it in the migrations table.
                 $insert_stmt = $pdo->prepare("INSERT INTO `migrations` (`migration`) VALUES (?)");
                 $insert_stmt->execute([$filename]);
 
-                // Commit the transaction
-                $pdo->commit();
                 echo "✅ SUCCESS: Executed and logged '$filename'.\n";
 
             } catch (Exception $e) {
-                // An error occurred, roll back the transaction
-                $pdo->rollBack();
-                echo "❌ ERROR: Failed to run migration '$filename'. The transaction has been rolled back.\n";
+                echo "❌ ERROR: Failed to run migration '$filename'.\n";
                 echo "Error Details: " . $e->getMessage() . "\n\n";
                 // Stop execution on failure
                 exit;
