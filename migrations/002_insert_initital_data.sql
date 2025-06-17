@@ -32,8 +32,7 @@ INSERT IGNORE INTO `oauth_scopes` (`scope`, `description`) VALUES
 
 --
 -- Update the test client to include all the new scopes.
--- Using `ON DUPLICATE KEY UPDATE` is safer for updates than a separate `UPDATE` query.
 --
-INSERT INTO `oauth_clients` (`client_id`, `scope`)
-VALUES ('testclient', 'profile users:create clients:create users:read users:update users:delete users:list')
-ON DUPLICATE KEY UPDATE `scope` = 'profile users:create clients:create users:read users:update users:delete users:list';
+UPDATE `oauth_clients`
+SET `scope` = 'profile users:create clients:create users:read users:update users:delete users:list'
+WHERE `client_id` = 'testclient';
